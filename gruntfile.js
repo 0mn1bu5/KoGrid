@@ -4,20 +4,27 @@ module.exports = function(grunt) {
 		var leader = "\n\/***********************************************"
 			+ "\n* FILE: " + path
 			+ "\n***********************************************\/\n",
-			rgx = /\/([^/\.]+)\.html$/i,
+			htmlRgx = /\.html?$/i,
+			fileRgx = /^<!--(.*?)-->/,
 			matches;
 
-		if (rgx.test(path)) {
-			matches = rgx.exec(path);
+		if (htmlRgx.test(path)) {
+			matches = fileRgx.exec(src);
 
 			if (matches && matches[1]) {
-				leader += "window.kg." + matches[1] + " = function() { return '";
+				leader += matches[1] + " = function(){ return '";
+
+				// remove comment line
+				src = src.replace(/^<!--.*-->$/m, "");
 
 				// escape characters, remove extra whitespace
-				src = src.replace(/\\|'/g, "\\$&").replace(/^\s*(.*)\s*$/gm, "$1") + "'; };";
+				src = src.replace(/'/g, "\\'").replace(/^\s*(.*)\s*$/gm, "$1") + "';};";
 			}
 		}
 
+		// remove references
+		src = src.replace(/^\/\/\/.*$/m, "");
+		
 		return leader + src;
 	}
 

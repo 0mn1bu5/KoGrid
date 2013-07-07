@@ -74,20 +74,25 @@ window.kg.SelectionService = function (grid) {
     // @return - boolean indicating if all items are selected or not
     // @val - boolean indicating whether to select all/de-select all
     self.toggleSelectAll = function (checkAll) {
-        var selectedlength = self.selectedItems().length;
-        if (selectedlength > 0) {
-            self.selectedItems.splice(0, selectedlength);
+        var selected = self.selectedItems();
+        if (selected.length) {
+            self.selectedItems([]);
         }
+
         $.each(grid.filteredData(), function (i, item) {
             item[SELECTED_PROP] = checkAll;
+
             if (checkAll) {
-                self.selectedItems.push(item);
+                selected.push(item);
             }
         });
+
         $.each(self.rowFactory.rowCache, function (i, row) {
             if (row && row.selected) {
                 row.selected(checkAll);
             }
         });
+
+        self.selectedItems.valueHasMutated();
     };
 };

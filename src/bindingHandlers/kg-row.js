@@ -1,6 +1,6 @@
 ﻿/// <reference path="../../lib/knockout-2.2.0.js" />
 /// <reference path="../constants.js" />
-﻿/// <reference path="../templates/aggregateTemplate.js" />
+/// <reference path="../templates/aggregateTemplate.js" />
 /// <reference path="../namespace.js" />
 ko.bindingHandlers['kgRow'] = (function () {
     return {
