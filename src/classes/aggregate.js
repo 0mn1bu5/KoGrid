@@ -30,6 +30,13 @@ window.kg.Aggregate = function (aggEntity, rowFactory) {
         self.collapsed(state);
         self.notifyChildren();
     };
+    self.getOffsetTopInt = function() {
+        var pxInd = ('' + self.offsetTop()).indexOf('px');	
+        if (pxInd < 0)
+            return parseInt(self.offsetTop());
+
+        return parseInt(('' + self.offsetTop()).slice(0, pxInd));
+    };
     self.notifyChildren = function() {
         $.each(self.aggChildren, function (i, child) {
             child.entity[KG_HIDDEN] = self.collapsed();
@@ -47,7 +54,7 @@ window.kg.Aggregate = function (aggEntity, rowFactory) {
             if (foundMyself) {
                 var offset = (30 * self.children.length);
                 var c = self.collapsed();
-                agg.offsetTop(c ? agg.offsetTop() - offset : agg.offsetTop() + offset);
+                agg.offsetTop(c ? (agg.getOffsetTopInt() - offset) + 'px' : (agg.getOffsetTopInt() + offset) + 'px');
             } else {
                 if (i == self.aggIndex) {
                     foundMyself = true;

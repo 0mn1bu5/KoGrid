@@ -7,23 +7,25 @@ window.kg.EventProvider = function (grid) {
 	self.groupToMove = undefined;
     self.assignEvents = function () {
         // Here we set the onmousedown event handler to the header container.
-		if(grid.config.jqueryUIDraggable){
-			grid.$groupPanel.droppable({
-				addClasses: false,
-				drop: function(event) {
-					self.onGroupDrop(event);
-				}
-			});
-			$(document).ready(self.setDraggables);	
-		} else {
-			grid.$groupPanel.on('mousedown', self.onGroupMouseDown).on('dragover', self.dragOver).on('drop', self.onGroupDrop);
-			grid.$headerScroller.on('mousedown', self.onHeaderMouseDown).on('dragover', self.dragOver).on('drop', self.onHeaderDrop);
-			if (grid.config.enableRowReordering) {
-				grid.$viewport.on('mousedown', self.onRowMouseDown).on('dragover', self.dragOver).on('drop', self.onRowDrop);
-			}
-			self.setDraggables();
-		}
-        grid.columns.subscribe(self.setDraggables);
+    	if (grid.config.enableColumnDragAndDrop) {
+    		if (grid.config.jqueryUIDraggable) {
+    			grid.$groupPanel.droppable({
+    				addClasses: false,
+    				drop: function(event) {
+    					self.onGroupDrop(event);
+    				}
+    			});
+    			$(document).ready(self.setDraggables);
+    		} else {
+    			grid.$groupPanel.on('mousedown', self.onGroupMouseDown).on('dragover', self.dragOver).on('drop', self.onGroupDrop);
+    			grid.$headerScroller.on('mousedown', self.onHeaderMouseDown).on('dragover', self.dragOver).on('drop', self.onHeaderDrop);
+    			if (grid.config.enableRowReordering) {
+    				grid.$viewport.on('mousedown', self.onRowMouseDown).on('dragover', self.dragOver).on('drop', self.onRowDrop);
+    			}
+    			self.setDraggables();
+    		}
+    		grid.columns.subscribe(self.setDraggables);
+    	}
     };
     self.dragOver = function(evt) {
         evt.preventDefault();

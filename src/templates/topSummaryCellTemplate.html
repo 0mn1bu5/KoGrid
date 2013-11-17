@@ -1,0 +1,4 @@
+<!--window.kg.defaultTopSummaryCellTemplate-->
+<div data-bind="attr: {'class': topSummaryClass()}">
+	<div data-bind="attr: { 'class': 'colt' + $index() + ' kgTopSummaryText' }, html: window.kg.utils.isNullOrUndefined(summaryFunction) || $data.field == '' || $data.field == '\u2714' ? '' : summaryFunction($.map($parent.config.data(), function(row, i) {return row[$data.field];}))"></div>
+</div>

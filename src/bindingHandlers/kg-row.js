@@ -9,7 +9,7 @@ ko.bindingHandlers['kgRow'] = (function () {
             var grid = row.$grid = bindingContext.$parent;
             var source;
             if (row.isAggRow) {
-                source = window.kg.aggregateTemplate();
+            	source = grid.aggregateRowTemplate;
             } else {
                 source = grid.rowTemplate;
             }

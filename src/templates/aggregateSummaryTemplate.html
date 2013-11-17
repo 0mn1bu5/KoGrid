@@ -1,0 +1,12 @@
+<!--window.kg.aggregateSummaryTemplate-->
+<div data-bind="click: toggleExpand, style: {'left': offsetLeft()}" class="kgAggregate">
+	<div>
+		<div data-bind="attr: {'class' : 'kgAggCellLeft aggTitleCol' + depth}">
+			<div class="kgAggCellText" data-bind="html: $data.label">(<span data-bind="html: totalChildren"></span> Items)</div>
+		</div>
+		<div data-bind="style: {'left': '-' + offsetLeft()}, attr: {'class': 'kgAggSummmaryCols'} ,visible: $grid.anyAggregateRowColumn,foreach: $grid.aggregateRowColumns">
+			<div data-bind="attr: { 'class': cellClass() + ' kgAggCell col' + ($index() + $parent.$grid.firstRealColumnIndex() + 1)}, kgAggSumCell: $data"></div>
+		</div>	
+	</div>
+	<div data-bind="attr: {'class' : aggClass }"></div>
+</div>

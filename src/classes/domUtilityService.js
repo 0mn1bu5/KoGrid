@@ -29,6 +29,7 @@ window.kg.domUtilityService = {
         grid.$topPanel = grid.$root.find(".kgTopPanel");
         grid.$groupPanel = grid.$root.find(".kgGroupPanel");
         grid.$headerContainer = grid.$topPanel.find(".kgHeaderContainer");
+        grid.$topSummaryContainer = grid.$topPanel.find(".kgTopSummaryContainer");
         grid.$headerScroller = grid.$topPanel.find(".kgHeaderScroller");
         grid.$headers = grid.$headerScroller.children();
         //Viewport
@@ -76,7 +77,18 @@ window.kg.domUtilityService = {
                    "." + gridId + " .colt" + i + " { width: " + col.width + "px; }";
             sumWidth += col.width;
         });
-        if (window.kg.utils.isIe) { // IE
+
+        if(grid.config.showAggregateSummary) {
+            var groupingColumns = grid.visibleColumns().length - grid.nonAggAndCheckboxVisibleColumns().length;
+            var firstNonAggColumn = grid.nonAggAndCheckboxVisibleColumns()[0];
+	        
+            for(  var i = 0; i < groupingColumns; i++)
+            {
+    	    	css += "." + gridId + " .aggTitleCol" + i + " {width: " + (firstNonAggColumn.width + (groupingColumns - i - 1) * 25) + "px;}";
+            }
+        }
+
+	if (window.kg.utils.isIe) { // IE
             $style[0].styleSheet.cssText = css;
         } else {
             $style.append(document.createTextNode(css));
