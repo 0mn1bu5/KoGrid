@@ -336,19 +336,21 @@ ko.bindingHandlers['koGrid'] = (function () {
             window.kg.domUtilityService.BuildStyles(grid);
 	        
             //Taranyan on 2013/09/09: Initial column grouping fixed
-            var columnsToGroupBy = [];
+            if (groups) {
+                var columnsToGroupBy = [];
 
-            $.each(groups, function (i, item) {
-            	$.each(grid.columns(), function (j, column) {
-            		if (column.field == item) {
-						columnsToGroupBy.push(column);
-            		}
-            	});
-            });
+                $.each(groups, function(i, item) {
+                    $.each(grid.columns(), function(j, column) {
+                        if (column.field == item) {
+                            columnsToGroupBy.push(column);
+                        }
+                    });
+                });
 
-            $.each(columnsToGroupBy, function (i, column) {
-				grid.groupBy(column);
-            });
+                $.each(columnsToGroupBy, function(i, column) {
+                    grid.groupBy(column);
+                });
+            }
             //#
 
             return { controlsDescendantBindings: true };
