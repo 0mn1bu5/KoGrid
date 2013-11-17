@@ -87,21 +87,14 @@
 	        
             //Taranyan on 2013/09/09: Initial column grouping fixed
             if (groups) {
-                var columnsToGroupBy = [];
-
                 $.each(groups, function(i, item) {
                     $.each(grid.columns(), function(j, column) {
                         if (column.field == item) {
-                            columnsToGroupBy.push(column);
+                            grid.groupBy(column);
                         }
                     });
                 });
-
-                $.each(columnsToGroupBy, function(i, column) {
-                    grid.groupBy(column);
-                });
             }
-            //#
 
             return { controlsDescendantBindings: true };
         }

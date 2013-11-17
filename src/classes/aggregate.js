@@ -84,6 +84,26 @@ window.kg.Aggregate = function (aggEntity, rowFactory) {
             return self.children.length;
         }
     });
+    self.getAllChildren = function () {
+        if (self.aggChildren.length > 0) {
+            var allChildren = [];
+            var recurse = function (cur) {
+                if (cur.aggChildren.length > 0) {
+                    $.each(cur.aggChildren, function (x, a) {
+                        recurse(a);
+                    });
+                } else {
+                    $.each(cur.children, function (x, a) {
+                        allChildren.push(a);
+                    });
+                }
+            };
+            recurse(self);
+            return allChildren;
+        } else {
+            return self.children;
+        }
+    };
     self.selected = ko.observable(false);
     self.isEven = ko.observable(false);
     self.isOdd = ko.observable(false);

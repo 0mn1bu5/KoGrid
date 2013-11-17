@@ -213,7 +213,7 @@ window.kg.defaultCellTemplate = function(){ return '<div data-bind="attr: { \'cl
 /**************************************************
 * FILE: ..\src\templates\aggregateSummaryCellTemplate.html
 **************************************************/
-window.kg.defaultAggregateSummaryCellTemplate = function () { return '<div data-bind="attr: { \'class\': \'kgAggCellText colt\' + ($index() + $parent.$grid.firstRealColumnIndex() + 1)}, html: window.kg.utils.isNullOrUndefined(summaryFunction) || $data.field == \'\' || $data.field == \'\u2714\' ? \'\' : summaryFunction($.map($parent.children, function(row, i) {return row[$data.field];}))"></div>'; };
+window.kg.defaultAggregateSummaryCellTemplate = function () { return '<div data-bind="attr: { \'class\': \'kgAggCellText colt\' + ($index() + $parent.$grid.firstRealColumnIndex() + 1)}, html: window.kg.utils.isNullOrUndefined(summaryFunction) || $data.field == \'\' || $data.field == \'\u2714\' ? \'\' : summaryFunction($.map($parent.getAllChildren(), function(row, i) {return row[$data.field];}))"></div>'; };
 
 /**************************************************
 * FILE: ..\src\templates\aggregateTemplate.html
@@ -337,21 +337,14 @@ ko.bindingHandlers['koGrid'] = (function () {
 	        
             //Taranyan on 2013/09/09: Initial column grouping fixed
             if (groups) {
-                var columnsToGroupBy = [];
-
                 $.each(groups, function(i, item) {
                     $.each(grid.columns(), function(j, column) {
                         if (column.field == item) {
-                            columnsToGroupBy.push(column);
+                            grid.groupBy(column);
                         }
                     });
                 });
-
-                $.each(columnsToGroupBy, function(i, column) {
-                    grid.groupBy(column);
-                });
             }
-            //#
 
             return { controlsDescendantBindings: true };
         }
@@ -630,6 +623,26 @@ window.kg.Aggregate = function (aggEntity, rowFactory) {
             return self.children.length;
         }
     });
+    self.getAllChildren = function () {
+        if (self.aggChildren.length > 0) {
+            var allChildren = [];
+            var recurse = function (cur) {
+                if (cur.aggChildren.length > 0) {
+                    $.each(cur.aggChildren, function (x, a) {
+                        recurse(a);
+                    });
+                } else {
+                    $.each(cur.children, function (x, a) {
+                        allChildren.push(a);
+                    });
+                }
+            };
+            recurse(self);
+            return allChildren;
+        } else {
+            return self.children;
+        }
+    };
     self.selected = ko.observable(false);
     self.isEven = ko.observable(false);
     self.isOdd = ko.observable(false);

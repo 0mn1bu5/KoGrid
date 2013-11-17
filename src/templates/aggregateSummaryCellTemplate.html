@@ -1,2 +1,2 @@
 <!--window.kg.defaultAggregateSummaryCellTemplate-->
-<div data-bind="attr: { 'class': 'kgAggCellText colt' + ($index() + $parent.$grid.firstRealColumnIndex() + 1)}, html: window.kg.utils.isNullOrUndefined(summaryFunction) || $data.field == '' || $data.field == '\u2714' ? '' : summaryFunction($.map($parent.children, function(row, i) {return row[$data.field];}))"></div>
+<div data-bind="attr: { 'class': 'kgAggCellText colt' + ($index() + $parent.$grid.firstRealColumnIndex() + 1)}, html: window.kg.utils.isNullOrUndefined(summaryFunction) || $data.field == '' || $data.field == '\u2714' ? '' : summaryFunction($.map($parent.getAllChildren(), function(row, i) {return row[$data.field];}))"></div>
