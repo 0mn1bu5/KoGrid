@@ -107,9 +107,19 @@ window.kg.sortService = {
         return numA - numB;
     },
     sortAlpha: function(a, b) {
-        var strA = a.toLowerCase(),
-            strB = b.toLowerCase();
-        return strA == strB ? 0 : (strA < strB ? -1 : 1);
+        if (!a && !b) {
+            return 0;
+        }
+
+        if (!a) {
+            return -1;
+        }
+
+        if (!b) {
+            return 1;
+        }
+
+        return String(a).localeCompare(b);
     },
     sortBool: function(a, b) {
         if (a && b) {
@@ -171,7 +181,7 @@ window.kg.sortService = {
             d = '0' + d;
         }
         dateA = y + m + d;
-        mtch = b.match(dateRE);
+        mtch = b.match(window.kg.sortService.dateRE);
         y = mtch[3];
         d = mtch[2];
         m = mtch[1];
