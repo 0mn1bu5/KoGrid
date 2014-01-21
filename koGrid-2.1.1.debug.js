@@ -1171,11 +1171,7 @@ window.kg.Grid = function (options) {
         rootMaxH: 0
     };
     //self funcs
-    self.setRenderedRows = function (newRows) {
-    	ko.utils.arrayForEach(newRows, function (row) {
-            row.selected(false);
-        });
-        
+    self.setRenderedRows = function (newRows) 
         self.renderedRows(newRows);
         self.refreshDomSizes();
     };
@@ -1825,6 +1821,7 @@ window.kg.SelectionService = function (grid) {
 	                rows[rows.length - 1].afterSelectionChange(rows, evt);
 	            }
 	            self.lastClickedRow = rows[rows.length - 1];
+	            grid.$$selectionPhase = false;
 	            return true;
 	        }
 	    } else if (!self.multi) {
