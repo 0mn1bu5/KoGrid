@@ -38,7 +38,7 @@ window.kg.RowFactory = function (grid) {
             row = new window.kg.Row(entity, self.rowConfig, self.selectionService);
             row.rowIndex(rowIndex + 1); //not a zero-based rowIndex
             row.offsetTop((self.rowHeight * rowIndex).toString() + 'px');
-            row.selected(entity[SELECTED_PROP]);
+            row.selected(entity[SELECTED_PROP]());
             // finally cache it for the next round
             self.rowCache[rowIndex] = row;
         }
@@ -172,6 +172,10 @@ window.kg.RowFactory = function (grid) {
         var data = grid.filteredData();
         var maxDepth = groups.length;
         var cols = grid.columns();
+		
+		if (!cols.length) {
+            return;
+        }
 
         if (!cols.length) {
             return;

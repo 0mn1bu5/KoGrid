@@ -31,7 +31,7 @@ window.kg.Grid = function (options) {
             enableSorting: true,
             maintainColumnRatios: undefined,
             beforeSelectionChange: function () { return true;},
-            afterSelectionChange: function () { return true;},
+            afterSelectionChange: function () { return true; },
             columnsChanged: function() { },
             rowTemplate: undefined,
             headerRowTemplate: undefined,
@@ -146,6 +146,7 @@ window.kg.Grid = function (options) {
             columnDefs = self.config.columnDefs;
         }
         if (self.config.displaySelectionCheckbox && self.config.canSelectRows) {
+            if (columnDefs.length > 0 && columnDefs[0].field != '\u2714') {
             columnDefs.splice(0, 0, {
                 field: '\u2714',
                 width: self.elementDims.rowSelectedCellW,
@@ -155,6 +156,7 @@ window.kg.Grid = function (options) {
                 topSummaryCellTemplate: '<div class="kgSelectionTopSummary"></div>',
                 cellTemplate: '<div class="kgSelectionCell"><input class="kgSelectionCheckbox" type="checkbox" data-bind="checked: $parent.selected" /></div>'
             });
+        }
         }
         columnDefs.sort(function (a, b) {return a.index - b.index;});
         if (columnDefs.length > 0) {
