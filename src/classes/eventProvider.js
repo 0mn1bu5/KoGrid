@@ -7,6 +7,7 @@ window.kg.EventProvider = function (grid) {
 	self.groupToMove = undefined;
     self.assignEvents = function () {
         // Here we set the onmousedown event handler to the header container.
+    	if (grid.config.enableColumnDragAndDrop) {
 		if(grid.config.jqueryUIDraggable){
 			grid.$groupPanel.droppable({
 				addClasses: false,
@@ -24,6 +25,7 @@ window.kg.EventProvider = function (grid) {
 			self.setDraggables();
 		}
         grid.visibleColumns.subscribe(self.setDraggables);
+    	}
     };
     self.dragOver = function(evt) {
         evt.preventDefault();

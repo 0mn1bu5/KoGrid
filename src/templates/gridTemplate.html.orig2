@@ -18,9 +18,6 @@
         <div class="kgHeaderContainer" data-bind="style: headerStyle">
             <div class="kgHeaderScroller" data-bind="style: headerScrollerStyle, kgHeaderRow: $data" ></div>
         </div>
-		<div class="kgTopSummaryContainer" data-bind="visible: showTopSummary, style: topSummaryStyle">
-			<div class="kgHeaderScroller" data-bind="style: headerScrollerStyle, kgTopSummaryRow: $data" ></div>
-		</div>
         <div class="kgHeaderButton" data-bind="visible: ($data.showColumnMenu || $data.showFilter), click: toggleShowMenu">
             <div class="kgHeaderButtonArrow"></div>
         </div>
@@ -30,7 +27,6 @@
             </div>
             <div data-bind="visible: showColumnMenu">
                 <span class="kgMenuText">Choose Columns:</span>
-				<!--<ul class="kgColList" data-bind="foreach: nonAggColumns">-->
                 <ul class="kgColList" data-bind="foreach: groupableByCol">
                     <li class="kgColListItem">
                         <label style="position: relative;">

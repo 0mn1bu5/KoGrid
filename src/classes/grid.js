@@ -27,6 +27,7 @@ window.kg.Grid = function (options) {
             multiSelect: true,
             tabIndex: -1,
             enableColumnResize: true,
+            enableColumnDragAndDrop: true,
             enableSorting: true,
             maintainColumnRatios: undefined,
             beforeSelectionChange: function () { return true;},
@@ -35,12 +36,16 @@ window.kg.Grid = function (options) {
             rowTemplate: undefined,
             headerRowTemplate: undefined,
             footerRowTemplate: undefined,
+            topSummaryRowTemplate: undefined,
+            aggregateRowTemplate: undefined,
             jqueryUITheme: false,
             jqueryUIDraggable: false,
             plugins: [],
             keepLastSelected: true,
             groups: [],
             showGroupPanel: false,
+            showTopSummary: false,
+            showAggregateSummary: false,
             enableRowReordering: false,
             showColumnMenu: true,
             showFilter: true,
@@ -71,6 +76,7 @@ window.kg.Grid = function (options) {
 	self.$groupPanel = null;
     self.$topPanel = null;
     self.$headerContainer = null;
+    self.$topSummaryContainer = null;
     self.$headerScroller = null;
     self.$headers = null;
     self.$viewport = null;
@@ -146,6 +152,7 @@ window.kg.Grid = function (options) {
                 sortable: false,
                 resizable: false,
                 headerCellTemplate: '<input class="kgSelectionHeader" type="checkbox" data-bind="visible: $grid.multiSelect, checked: $grid.allSelected"/>',
+                topSummaryCellTemplate: '<div class="kgSelectionTopSummary"></div>',
                 cellTemplate: '<div class="kgSelectionCell"><input class="kgSelectionCheckbox" type="checkbox" data-bind="checked: $parent.selected" /></div>'
             });
         }
@@ -203,12 +210,24 @@ window.kg.Grid = function (options) {
     };
     self.configureColumnWidths = function() {
         var cols = self.config.columnDefs;
-        var numOfCols = cols.length,
-            asterisksArray = [],
+        var asterisksArray = [],
             percentArray = [],
             asteriskNum = 0,
             totalWidth = 0;
         var columns = self.columns();
+        var nonAggColums = [];
+        var numOfCols = columns.length;
+    	
+    	//Field is empty only for "aggregating" columns. All aggregating columns are at the front of the array
+	    for (var ind = 0; ind < columns.length; ind++) {
+	    	if (columns[ind].field == '') { // Checking if its an aggregating column
+	    		totalWidth += columns[ind].width;
+	    	}
+			else {
+	    		nonAggColums.push(columns[ind]);
+	    	}
+	    }
+
         var aggColOffset = self.columns().length - self.nonAggColumns().length;
         $.each(columns, function(i, column) {
             var col;
@@ -217,8 +236,7 @@ window.kg.Grid = function (options) {
                     col = c;
                 }
             });
-            col = col ? {width: col.width, index: i} : {width: column.width, index: i};
-        // });
+            col = col ? {width: col.width, index: i} : {width: column.width, index: i};        // });
         // $.each(cols, function (i, col) {
             if (column.visible === false) {
                 return;
@@ -236,8 +254,8 @@ window.kg.Grid = function (options) {
                 t = col.width;
                 // figure out if the width is defined or if we need to calculate it
                 if (t == 'auto') { // set it for now until we have data and subscribe when it changes so we can set the width.
-                    columns[i].width = columns[i].minWidth;
-                    var temp = columns[i];
+                    nonAggColums[i].width = nonAggColums[i].minWidth;
+                    var temp = nonAggColums[i];
                     $(document).ready(function() { self.resizeOnData(temp, true); });
                     return;
                 } else if (t.indexOf("*") != -1) {
@@ -252,7 +270,7 @@ window.kg.Grid = function (options) {
                     throw "unable to parse column width, use percentage (\"10%\",\"20%\", etc...) or \"*\" to use remaining width of grid";
                 }
             } else {
-                totalWidth += columns[i].width = parseInt(col.width, 10);
+            	totalWidth += nonAggColums[i].width = parseInt(col.width, 10);
             }
         });
         // check if we saved any asterisk columns for calculating later
@@ -260,12 +278,14 @@ window.kg.Grid = function (options) {
             self.config.maintainColumnRatios === false ? $.noop() : self.config.maintainColumnRatios = true;
             // get the remaining width
             var remainingWidth = self.rootDim.outerWidth() - totalWidth;
-            var offset = 2; //We're going to remove 2 px so we won't overflow the viewport by default
+          
+			var offset = 2; //We're going to remove 2 px so we won't overflow the viewport by default
             // calculate the weight of each asterisk rounded down
             if (self.maxCanvasHt() > self.viewportDimHeight()) {
                 //compensate for scrollbar
                 offset += window.kg.domUtilityService.ScrollW;
             }
+			
             remainingWidth -= offset;
             if (remainingWidth < 0) remainingWidth = 0;
             // calculate the weight of each asterisk rounded down
@@ -274,22 +294,30 @@ window.kg.Grid = function (options) {
             if (asteriskVal < 1) {
                 asteriskVal = 1;
             }
+
             $.each(asterisksArray, function (i, col) {              
                 var t = col.width.length;
-                var column = columns[col.index];
+                //var column = columns[col.index];
+				var column = nonAggColums[col.index];
                 column.width = asteriskVal * t;
                 if (column.width < column.minWidth) {
                     column.width = column.minWidth;
                 }
+				//check if we are on the last column
+                //if (col.index + 1 == numOfCols) {
+				//	nonAggColums[col.index].width -= offset;
+				//}
                 totalWidth += columns[col.index].width;
             });
         }
         // Now we check if we saved any percentage columns for calculating last
         if (percentArray.length > 0) {
             // do the math
+            var remainingWidth = self.rootDim.outerWidth() - totalWidth;
+
             $.each(percentArray, function (i, col) {
                 var t = col.width;
-                columns[col.index].width = Math.floor(self.rootDim.outerWidth() * (parseInt(t.slice(0, -1), 10) / 100));
+                nonAggColums[col.index].width = Math.floor(remainingWidth * (parseInt(t.slice(0, -1), 10) / 100));
             });
         }
         self.columns(columns);
@@ -309,6 +337,7 @@ window.kg.Grid = function (options) {
 	}
 	self.init = function () {
         //factories and services
+	    
         self.selectionService = new window.kg.SelectionService(self);
         self.rowFactory = new window.kg.RowFactory(self);
         self.selectionService.Initialize(self.rowFactory);
@@ -324,6 +353,9 @@ window.kg.Grid = function (options) {
 			}
 		}
         window.kg.sortService.columns = self.columns;
+	    
+
+
         self.configGroups.subscribe(function (a) {
             if (!a) {
                 return;
@@ -348,7 +380,10 @@ window.kg.Grid = function (options) {
 		});
         self.maxCanvasHt(self.calcMaxCanvasHeight());
         self.searchProvider.evalFilter();
+	    
+
         self.refreshDomSizes();
+	    
     };
     self.prevScrollTop = 0;
     self.prevScrollIndex = 0;
@@ -371,6 +406,9 @@ window.kg.Grid = function (options) {
         if (self.$headerContainer) {
             self.$headerContainer.scrollLeft(scrollLeft);
         }
+        if(self.$topSummaryContainer) {
+            self.$topSummaryContainer.scrollLeft(scrollLeft);
+        }
     };
     self.resizeOnData = function (col) {
         // we calculate the longest data.
@@ -381,7 +419,12 @@ window.kg.Grid = function (options) {
             if (index === 0) {
                 var kgHeaderText = $(elem).find('.kgHeaderText');
                 i = window.kg.utils.visualLength(kgHeaderText) + 10;// +10 some margin
-            } else {
+            }
+            else if (index == 1 && self.config.showTopSummary) {
+            	var tsCellText = $(elem).find('.kgTopSummaryText');
+            	i = window.kg.utils.visualLength(tsCellText) + 10; // +10 some margin
+            }
+            else {
                 var ngCellText = $(elem).find('.kgCellText');
                 i = window.kg.utils.visualLength(ngCellText) + 10; // +10 some margin
             }
@@ -452,6 +495,9 @@ window.kg.Grid = function (options) {
     self.rowTemplate = self.config.rowTemplate || window.kg.defaultRowTemplate();
     self.headerRowTemplate = self.config.headerRowTemplate || window.kg.defaultHeaderRowTemplate();
     self.footerRowTemplate = self.config.footerRowTemplate || window.kg.defaultFooterRowTemplate();
+    self.topSummaryRowTemplate = self.config.topSummaryRowTemplate || window.kg.defaultTopSummaryRowTemplate();
+    self.aggregateRowTemplate = self.config.aggregateRowTemplate || (self.config.showAggregateSummary ? window.kg.aggregateSummaryTemplate() : window.kg.aggregateTemplate());
+	
     if (self.config.rowTemplate && !TEMPLATE_REGEXP.test(self.config.rowTemplate)) {
         self.rowTemplate = window.kg.utils.getTemplatePromise(self.config.rowTemplate);
     }
@@ -460,6 +506,12 @@ window.kg.Grid = function (options) {
     }
 	if (self.config.footerRowTemplate && !TEMPLATE_REGEXP.test(self.config.footerRowTemplate)) {
         self.footerRowTemplate = window.kg.utils.getTemplatePromise(self.config.footerRowTemplate);
+    }
+    if (self.config.topSummaryRowTemplate && !TEMPLATE_REGEXP.test(self.config.topSummaryRowTemplate)) {
+    	self.topSummaryRowTemplate = window.kg.utils.getTemplatePromise(self.config.topSummaryRowTemplate);
+    }
+    if (self.config.aggregateRowTemplate && !TEMPLATE_REGEXP.test(self.config.aggregateRowTemplate)) {
+    	self.aggregateRowTemplate = window.kg.utils.getTemplatePromise(self.config.aggregateRowTemplate);
     }
     //scope funcs
     self.visibleColumns = ko.computed(function () {
@@ -484,6 +536,23 @@ window.kg.Grid = function (options) {
             return col.isAggCol;
         });
     });
+    self.nonAggAndCheckboxVisibleColumns = ko.computed(function () {
+    	var cols = self.nonAggColumns();
+    	return cols.filter(function (col) {
+    		var isVis = col.visible();
+    		return isVis && col.field != '\u2714';
+    	});
+    });
+    self.aggregateRowColumns = ko.computed(function () {
+    	return self.nonAggAndCheckboxVisibleColumns().slice(1);
+    });
+    self.anyAggregateRowColumn = ko.computed(function () {
+    	return self.nonAggAndCheckboxVisibleColumns().length > 0;
+    });
+    // For aggreagate row with summary
+    self.firstRealColumnIndex = ko.computed(function () {
+    	return self.visibleColumns().length - self.nonAggAndCheckboxVisibleColumns().length;
+    });
     self.toggleShowMenu = function () {
         self.showMenu(!self.showMenu());
     };
@@ -500,14 +569,27 @@ window.kg.Grid = function (options) {
 	self.showGroupPanel = ko.computed(function(){
 		return self.config.showGroupPanel;
 	});
-	self.topPanelHeight = ko.observable(self.config.showGroupPanel === true ? (self.config.headerRowHeight * 2) : self.config.headerRowHeight);
+	self.showTopSummary = ko.computed(function () {
+		return self.config.showTopSummary;
+	});
+	self.showAggregateSummary = ko.computed(function () {
+		return self.config.showAggregateSummary;
+	});
+
+	self.topPanelHeight = ko.observable( self.config.showGroupPanel && self.config.showTopSummary ? (self.config.headerRowHeight * 3)
+										: self.config.showGroupPanel || self.config.showTopSummary ? (self.config.headerRowHeight * 2) : self.config.headerRowHeight);
 	self.viewportDimHeight = ko.computed(function () {
         return Math.max(0, self.rootDim.outerHeight() - self.topPanelHeight() - self.config.footerRowHeight - 2);
     });
 	self.groupBy = function (col) {
-	    if (self.sortedData().length < 1) {
-	        return;
-	    }
+	    //Taranyan on 2013/09/15: 
+	    //For initial column grouping. Commented out because this was breaking grouping
+	    //in case when we have initial grouping and the grid is initially empty or its data is
+	    //being loaded asynchronously
+		
+	    //if (self.sortedData().length < 1) {
+	    //    return;
+	    //}
         var indx = self.configGroups().indexOf(col);
         if (indx == -1) {
 			col.isGroupedBy(true);

@@ -189,6 +189,7 @@ window.kg.RowFactory = function (grid) {
                             sortable: false,
                             resizable: false,
                             headerCellTemplate: '<div class="kgAggHeader"></div>',
+                            topSummaryCellTemplate: '<div class="kgAggTopSummary"></div>',
 							isGroupable: false
                         },
                         isAggCol: true,
@@ -225,6 +226,10 @@ window.kg.RowFactory = function (grid) {
         grid.fixColumnIndexes();
         self.parsedData.length = 0;
         self.parseGroupData(self.groupedData);
+	    
+        //Taranyan on 2013/09/10: Column widths should be recalculated after a group has been added/removed.
+        grid.configureColumnWidths();
+        //#
     };
 
     if (grid.config.groups.length > 0 && grid.filteredData().length > 0) {

@@ -4,6 +4,12 @@
             var options = valueAccessor();
             var elem = $(element);
             options.gridDim = new window.kg.Dimension({ outerHeight: ko.observable(elem.height()), outerWidth: ko.observable(elem.width()) });
+
+            //Taranyan on 2013/09/09: Initial column grouping fixed
+            var groups = options.groups;
+            options.groups = [];
+            //#
+
             var grid = new window.kg.Grid(options);
             var gridElem = $(window.kg.defaultGridTemplate());
             // if it is a string we can watch for data changes. otherwise you won't be able to update the grid data
@@ -14,6 +20,43 @@
                 grid.searchProvider.evalFilter();
                 grid.refreshDomSizes();
             });
+            //options.selectedItems.subscribe(function(opt1, opt2) {
+                //use ko.utils.arrayPushAll(array, items) to add elements
+                //use removeAll to delete
+                //use ko.utils.compareArrays(previousValue, latestValue); to identify added/deleted items an mark all in one time
+                //but may be it is overengineering
+            //});
+            
+            //VERESOV on 2013/07/12: fix bug with uninitialized selectedItems field
+            if (options.selectedItems != undefined) {
+                options.selectedItems.subscribeArrayChanged(
+                    function (dataAdded) {
+                        if (grid.$$selectionPhase) {
+                            return;
+                        }
+
+                        $.each(grid.rowFactory.rowCache, function (key, row) {
+                            if (row.entity == dataAdded) {
+                                grid.selectionService.setSelection(row, true);
+                                return;
+                            }
+                        });
+                    },
+                    function (dataDeleted) {
+                        if (grid.$$selectionPhase) {
+                            return;
+                        }
+
+                        $.each(grid.rowFactory.rowCache, function (key, row) {
+                            if (row.entity == dataDeleted) {
+                                grid.selectionService.setSelection(row, false);
+                                return;
+                            }
+                        });
+                    }
+                );
+            }
+            
             // if columndefs are observable watch for changes and rebuild columns.
             if (ko.isObservable(options.columnDefs)) {
                 options.columnDefs.subscribe(function (newDefs) {
@@ -41,6 +84,18 @@
                 }
             });
             window.kg.domUtilityService.BuildStyles(grid);
+	        
+            //Taranyan on 2013/09/09: Initial column grouping fixed
+            if (groups) {
+                $.each(groups, function(i, item) {
+                    $.each(grid.columns(), function(j, column) {
+                        if (column.field == item) {
+                            grid.groupBy(column);
+                        }
+                    });
+                });
+            }
+
             return { controlsDescendantBindings: true };
         }
     };

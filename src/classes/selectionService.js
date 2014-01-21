@@ -70,7 +70,9 @@ window.kg.SelectionService = function (grid) {
         rowItem.entity[SELECTED_PROP] = isSelected;
         if (!isSelected) {
             var indx = self.selectedItems.indexOf(rowItem.entity);
-            self.selectedItems.splice(indx, 1);
+            if (indx > 0) {
+                self.selectedItems.splice(indx, 1);
+            }
         } else {
             if (self.selectedItems.indexOf(rowItem.entity) === -1) {
                 self.selectedItems.push(rowItem.entity);

@@ -16,6 +16,7 @@
     self.maxWidth = !colDef.maxWidth ? 9000 : colDef.maxWidth;
     self.headerRowHeight = config.headerRowHeight;
     self.displayName = ko.observable(colDef.displayName || colDef.field);
+    self.summaryFunction = colDef.summaryFunction;
     self.index = config.index;
     self.isAggCol = config.isAggCol;
 	self.isGroupable = colDef.isGroupable;
@@ -44,13 +45,23 @@
     self.sortDirection = ko.observable(undefined);
     self.sortingAlgorithm = colDef.sortFn;
     self.headerClass = ko.observable(colDef.headerClass);
+    self.topSummaryClass = ko.observable(colDef.topSummaryClass);
     self.headerCellTemplate = colDef.headerCellTemplate || window.kg.defaultHeaderCellTemplate();
+    self.topSummaryCellTemplate = colDef.topSummaryCellTemplate || window.kg.defaultTopSummaryCellTemplate();
     self.cellTemplate = colDef.cellTemplate || window.kg.defaultCellTemplate();
+    self.aggregateSummaryCellTemplate = colDef.aggregateSummaryCellTemplate || window.kg.defaultAggregateSummaryCellTemplate();
+	
     if (colDef.cellTemplate && !TEMPLATE_REGEXP.test(colDef.cellTemplate)) {
         self.cellTemplate = window.kg.utils.getTemplatePromise(colDef.cellTemplate);
     }
+    if (colDef.topSummaryCellTemplate && !TEMPLATE_REGEXP.test(colDef.topSummaryCellTemplate)) {
+    	self.topSummaryCellTemplate = window.kg.utils.getTemplatePromise(colDef.topSummaryCellTemplate);
+    }
     if (colDef.headerCellTemplate && !TEMPLATE_REGEXP.test(colDef.headerCellTemplate)) {
         self.headerCellTemplate = window.kg.utils.getTemplatePromise(colDef.headerCellTemplate);
+    }
+    if (colDef.aggregateSummaryCellTemplate && !TEMPLATE_REGEXP.test(colDef.aggregateSummaryCellTemplate)) {
+    	self.aggregateSummaryCellTemplate = window.kg.utils.getTemplatePromise(colDef.aggregateSummaryCellTemplate);
     }
     self.getProperty = function (row) {
         var ret;

@@ -171,6 +171,34 @@
     overflow: hidden;
 }
 
+/******** Top Summary ********/
+
+.kgTopSummaryContainer {
+    position: relative;
+    overflow: hidden;
+}
+
+.kgTopSummaryCell{
+	border-left: 1px solid rgb(212,212,212);
+    border-top: 1px solid rgb(212,212,212);  
+    background-color: rgb(228, 228, 228);
+    position: absolute;
+}
+
+.kgTopSummaryCell:first-child{
+    border-left: 0;
+}
+
+.kgTopSummaryText {
+    padding: 5px;
+    box-sizing: border-box;
+    white-space: nowrap;
+    -ms-text-overflow: ellipsis;
+    -o-text-overflow: ellipsis;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
 /******** Viewport ********/
 .kgViewport{
 	overflow: auto;
@@ -304,6 +332,43 @@ input {
     border-style: solid;
     border-width: 5px 0 5px 8.7px;
     border-color: transparent transparent transparent #000000;
+}
+
+/*Aggregate summaries*/
+    
+.kgAggTopSummary {
+    position: absolute;
+    border: none;
+}
+.kgAggSummmaryCols {
+    position: absolute;
+    top: 0px;
+}
+
+.kgAggCell {
+    overflow: hidden; 
+    position: absolute;
+	border-left: 1px solid rgb(212,212,212);
+}
+
+.kgAggCellLeft {
+    position: absolute;
+    left: 26px;
+    overflow: hidden; 
+}
+
+.kgAggCell:last-child {
+    border-right: 1px solid rgb(212,212,212);
+}
+
+.kgAggCellText {
+    padding: 5px;
+    box-sizing: border-box;
+    white-space: nowrap;
+    -ms-text-overflow: ellipsis;
+    -o-text-overflow: ellipsis;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .kgHeaderButton {
