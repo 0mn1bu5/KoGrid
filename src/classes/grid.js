@@ -44,6 +44,7 @@ window.kg.Grid = function (options) {
             enableRowReordering: false,
             showColumnMenu: true,
             showFilter: true,
+			searchColumn: undefined,
             disableTextSelection: true,
             filterOptions: {
                 filterText: ko.observable(""),
@@ -157,7 +158,8 @@ window.kg.Grid = function (options) {
                     sortCallback: self.sortData, 
                     resizeOnDataCallback: self.resizeOnData,
                     enableResize: self.config.enableColumnResize,
-                    enableSort: self.config.enableSorting
+                    enableSort: self.config.enableSorting,
+					isGroupable: self.config.isGroupable
                 }, self);
                 cols.push(column);
                 var indx = self.config.groups.indexOf(colDef.field);
@@ -419,15 +421,20 @@ window.kg.Grid = function (options) {
             return isVis;
         });
     });
+	self.groupableByCol = ko.computed(function () {
+		return self.columns().filter(function (col) {
+			return col.isGroupable;
+		});
+	});
     self.nonAggColumns = ko.computed(function () {
         return self.columns().filter(function (col) {
             return !col.isAggCol;
         });
     });
-    self.aggColumns = ko.computed(function () {
-    	return self.columns().filter(function (col) {
-    		return col.isAggCol;
-    	});
+	self.aggColumns = ko.computed(function () {
+        return self.columns().filter(function (col) {
+            return col.isAggCol;
+        });
     });
     self.toggleShowMenu = function () {
         self.showMenu(!self.showMenu());

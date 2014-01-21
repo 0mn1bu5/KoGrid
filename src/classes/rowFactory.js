@@ -182,7 +182,8 @@ window.kg.RowFactory = function (grid) {
                             width: 25,
                             sortable: false,
                             resizable: false,
-                            headerCellTemplate: '<div class="kgAggHeader"></div>'
+                            headerCellTemplate: '<div class="kgAggHeader"></div>',
+							isGroupable: false
                         },
                         isAggCol: true,
                         index: item.gDepth,
