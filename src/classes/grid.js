@@ -34,6 +34,7 @@ window.kg.Grid = function (options) {
             columnsChanged: function() { },
             rowTemplate: undefined,
             headerRowTemplate: undefined,
+            footerRowTemplate: undefined,
             jqueryUITheme: false,
             jqueryUIDraggable: false,
             plugins: [],
@@ -244,14 +245,34 @@ window.kg.Grid = function (options) {
         self.columns(columns);
         window.kg.domUtilityService.BuildStyles(self);
     };
-    self.init = function () {
+	self.columnByField = function (field) {
+		if(field) {
+			var column;
+			$.each(self.columns(), function (i, c) {
+				if(field == c.field) {
+					 column = c;
+					 return false;
+				}
+			});
+			return column;
+		}
+	}
+	self.init = function () {
         //factories and services
         self.selectionService = new window.kg.SelectionService(self);
         self.rowFactory = new window.kg.RowFactory(self);
         self.selectionService.Initialize(self.rowFactory);
+        self.buildColumns();
         self.searchProvider = new window.kg.SearchProvider(self);
         self.styleProvider = new window.kg.StyleProvider(self);
-        self.buildColumns();
+		var sortingProperties = self.sortInfo.peek();
+		if(sortingProperties) {
+			var col = self.columnByField(sortingProperties.column.field);
+			if(col) {
+				col.sortDirection(sortingProperties.direction === ASC ? DESC : ASC);
+				col.sort();
+			}
+		}
         window.kg.sortService.columns = self.columns;
         self.configGroups.subscribe(function (a) {
             if (!a) {
@@ -380,11 +401,15 @@ window.kg.Grid = function (options) {
     //Templates
     self.rowTemplate = self.config.rowTemplate || window.kg.defaultRowTemplate();
     self.headerRowTemplate = self.config.headerRowTemplate || window.kg.defaultHeaderRowTemplate();
+    self.footerRowTemplate = self.config.footerRowTemplate || window.kg.defaultFooterRowTemplate();
     if (self.config.rowTemplate && !TEMPLATE_REGEXP.test(self.config.rowTemplate)) {
         self.rowTemplate = window.kg.utils.getTemplatePromise(self.config.rowTemplate);
     }
     if (self.config.headerRowTemplate && !TEMPLATE_REGEXP.test(self.config.headerRowTemplate)) {
         self.headerRowTemplate = window.kg.utils.getTemplatePromise(self.config.headerRowTemplate);
+    }
+	if (self.config.footerRowTemplate && !TEMPLATE_REGEXP.test(self.config.footerRowTemplate)) {
+        self.footerRowTemplate = window.kg.utils.getTemplatePromise(self.config.footerRowTemplate);
     }
     //scope funcs
     self.visibleColumns = ko.computed(function () {

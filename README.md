@@ -36,7 +36,7 @@ ko.applyBindings(vm);
 Check out the [Getting Started](https://github.com/Knockout-Contrib/KoGrid/wiki/Getting-Started) and other [Docs](https://github.com/Knockout-Contrib/KoGrid/wiki)
 
 ##Examples##
-http://knockout-contrib.github.io/KoGrid/#/examples
+http://knockout-contrib.github.com/KoGrid/#/examples
 
 also check out the new [Custom Cell Template Library](https://github.com/Knockout-Contrib/KoGrid/wiki/Cell-Template-Library)
 ##Change Log##
