@@ -1561,9 +1561,9 @@ window.kg.Grid = function (options) {
         self.selectionService = new window.kg.SelectionService(self);
         self.rowFactory = new window.kg.RowFactory(self);
         self.selectionService.Initialize(self.rowFactory);
+        self.buildColumns();
         self.searchProvider = new window.kg.SearchProvider(self);
         self.styleProvider = new window.kg.StyleProvider(self);
-        self.buildColumns();
         window.kg.sortService.columns = self.columns;
 	    
 
@@ -2253,7 +2253,7 @@ window.kg.sortService = {
         } 
         // now lets string check..
         //check if the item data is a valid number
-        if (item.match(/^-?[?$�]?[\d,.]+%?$/)) {
+        if (item.match(/^-?[£$€]?[\d,.]+%?$/)) {
             return window.kg.sortService.sortNumberStr;
         } 
         // check for a date: dd/mm/yyyy or dd/mm/yy
