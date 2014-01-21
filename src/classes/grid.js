@@ -149,11 +149,16 @@ window.kg.Grid = function (options) {
                 cellTemplate: '<div class="kgSelectionCell"><input class="kgSelectionCheckbox" type="checkbox" data-bind="checked: $parent.selected" /></div>'
             });
         }
+        columnDefs.sort(function (a, b) {return a.index - b.index;});
         if (columnDefs.length > 0) {
+            self.configGroups([]);
+            var configGroups = [];
             $.each(columnDefs, function (i, colDef) {
+                var index = i;
                 var column = new window.kg.Column({
-                    colDef: colDef, 
-                    index: i, 
+                    colDef: colDef,
+                    // This is likely causing our bug, we need to clean the index vield to ensure that all the indexes are valid.
+                    index: index,
                     headerRowHeight: self.config.headerRowHeight,
                     sortCallback: self.sortData, 
                     resizeOnDataCallback: self.resizeOnData,
@@ -164,10 +169,36 @@ window.kg.Grid = function (options) {
                 cols.push(column);
                 var indx = self.config.groups.indexOf(colDef.field);
                 if (indx != -1) {
-                    self.configGroups.splice(indx, 0, column);
+                    indx = colDef.groupIndex ? colDef.groupIndex - 1 : indx;
+                    configGroups.splice(indx, 0, column);
+                    column.isGroupedBy(true);
+                } else if (colDef.groupIndex) {
+                    //self.config.groups.splice(colDef.groupIndex - 1, 0, colDef.field);
+                    configGroups.splice(colDef.groupIndex - 1, 0, column);
+                    column.isGroupedBy(true);
                 }
             });
+            cols.sort(function (a, b) {return a.index - b.index;});
+            var gindex = [];
+            $.each(cols, function (index, item) {
+                var idx = item.groupIndex();
+                if (idx) {
+                    while(gindex[idx]) {
+                        idx++;
+                    }
+                    item.groupIndex(idx);
+                    gindex[idx] = item;
+                }
+            });
+            configGroups.sort(function (a, b) {return a.groupIndex() - b.groupIndex();});
+            var groups = [];
+            $.each(configGroups, function (index, item) {
+                groups.push(item.field);
+            });
+            self.config.groups = groups;
             self.columns(cols);
+            self.configGroups(configGroups);
+            self.fixGroupIndexes();
         }
     };
     self.configureColumnWidths = function() {
@@ -178,8 +209,21 @@ window.kg.Grid = function (options) {
             asteriskNum = 0,
             totalWidth = 0;
         var columns = self.columns();
-        $.each(cols, function (i, col) {
-            var isPercent = false, t = undefined;
+        var aggColOffset = self.columns().length - self.nonAggColumns().length;
+        $.each(columns, function(i, column) {
+            var col;
+            $.each(cols, function (index, c) {
+                if (c.field == column.field) {
+                    col = c;
+                }
+            });
+            col = col ? {width: col.width, index: i} : {width: column.width, index: i};
+        // });
+        // $.each(cols, function (i, col) {
+            if (column.visible === false) {
+                return;
+            }
+            var isPercent = false, t;
             //if width is not defined, set it to a single star
             if (window.kg.utils.isNullOrUndefined(col.width)) {
                 col.width = "*";
@@ -198,12 +242,11 @@ window.kg.Grid = function (options) {
                     return;
                 } else if (t.indexOf("*") != -1) {
                         asteriskNum += t.length;
-                        col.index = i;
-                        asterisksArray.push(col);
+                        asterisksArray.push({width: col.width, index: i});
                         return;
                 } else if (isPercent) { // If the width is a percentage, save it until the very last.
-                    col.index = i;
-                    percentArray.push(col);
+
+                    percentArray.push({width: col.width, index: i});
                     return;
                 } else { // we can't parse the width so lets throw an error.
                     throw "unable to parse column width, use percentage (\"10%\",\"20%\", etc...) or \"*\" to use remaining width of grid";
@@ -220,9 +263,16 @@ window.kg.Grid = function (options) {
             // calculate the weight of each asterisk rounded down
             var asteriskVal = Math.floor(remainingWidth / asteriskNum);
             // set the width of each column based on the number of stars
-            $.each(asterisksArray, function (i, col) {				
-				var t = col.width.length;
-                columns[col.index].width = asteriskVal * t;
+            if (asteriskVal < 1) {
+                asteriskVal = 1;
+            }
+            $.each(asterisksArray, function (i, col) {              
+                var t = col.width.length;
+                var column = columns[col.index];
+                column.width = asteriskVal * t;
+                if (column.width < column.minWidth) {
+                    column.width = column.minWidth;
+                }
                 //check if we are on the last column
                 if (col.index + 1 == numOfCols) {
                     var offset = 2; //We're going to remove 2 px so we won't overlflow the viwport by default
@@ -231,7 +281,7 @@ window.kg.Grid = function (options) {
                         //compensate for scrollbar
                         offset += window.kg.domUtilityService.ScrollW;
                     }
-                    columns[col.index].width -= offset;
+                    column.width -= offset;
                 }
                 totalWidth += columns[col.index].width;
             });
@@ -476,7 +526,9 @@ window.kg.Grid = function (options) {
 		})[0];
 		col.isGroupedBy(false);
 		col.groupIndex(0);
-        self.columns.splice(index, 1);
+        if (self.columns()[index].isAggCol) {
+            self.columns.splice(index, 1);
+        } 
         self.configGroups.splice(index, 1);
 		self.fixGroupIndexes();
         if (self.configGroups().length === 0) {

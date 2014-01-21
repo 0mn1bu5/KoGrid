@@ -117,6 +117,9 @@ window.kg.RowFactory = function (grid) {
             $.each(g.values, function (i, item) {
                 // get the last parent in the array because that's where our children want to be
                 self.parentCache[self.parentCache.length - 1].children.push(item);
+				// we can't reliably set this variable else where.
+				// once we've added a child (non-agg) row we know that this row is collapsed
+                self.parentCache[self.parentCache.length - 1].collapsed(true);
                 //add the row to our return array
                 self.parsedData.push(item);
             });
@@ -138,12 +141,15 @@ window.kg.RowFactory = function (grid) {
                         aggIndex: self.numberOfAggregates,
                         aggLabelFilter: g[KG_COLUMN].aggLabelFilter
                     }, 0);
+                        agg.collapsed(agg.entity._kg_collapsed);
                     self.numberOfAggregates++;
                     //set the aggregate parent to the parent in the array that is one less deep.
                     agg.parent = self.parentCache[agg.depth - 1];
                     // if we have a parent, set the parent to not be collapsed and append the current agg to its children
                     if (agg.parent) {
-                        agg.parent.collapsed(false);
+                        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! I changed this
+                        //agg.parent.collapsed(true);
+                        agg._kg_hidden_ = agg.parent.collapsed();
                         agg.parent.aggChildren.push(agg);
                     }
                     // add the aggregate row to the parsed data.
