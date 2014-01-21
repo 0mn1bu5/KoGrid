@@ -7,68 +7,69 @@
 /// <reference path="../namespace.js" />
 /// <reference path="../navigation.js"/>
 /// <reference path="../utils.js"/>
+window.kg.Defaults = {
+	rowHeight: 30,
+	columnWidth: 100,
+	headerRowHeight: 30,
+	footerRowHeight: 55,
+	footerVisible: true,			
+	displayFooter: undefined,
+	canSelectRows: true,
+	selectAllState: ko.observable(false),
+	data: ko.observableArray([]),
+	columnDefs: undefined,
+	selectedItems: ko.observableArray([]), // array, if multi turned off will have only one item in array
+	displaySelectionCheckbox: true, //toggles whether row selection check boxes appear
+	selectWithCheckboxOnly: false,
+	useExternalSorting: false,
+	sortInfo: ko.observable(undefined), // similar to filterInfo
+	multiSelect: true,
+	tabIndex: -1,
+	enableColumnResize: true,
+	enableColumnDragAndDrop: true,
+	enableSorting: true,
+	maintainColumnRatios: undefined,
+	beforeSelectionChange: function () { return true;},
+	afterSelectionChange: function () { return true; },
+	columnsChanged: function() { },
+	rowTemplate: undefined,
+	headerRowTemplate: undefined,
+	footerRowTemplate: undefined,
+	topSummaryRowTemplate: undefined,
+	aggregateRowTemplate: undefined,
+	jqueryUITheme: false,
+	jqueryUIDraggable: false,
+	plugins: [],
+	keepLastSelected: true,
+	groups: [],
+	showGroupPanel: false,
+	showTopSummary: false,
+	showAggregateSummary: false,
+	enableRowReordering: false,
+	showColumnMenu: true,
+	showFilter: true,
+	searchColumn: undefined,
+	disableTextSelection: true,
+	filterOptions: {
+		filterText: ko.observable(""),
+		useExternalFilter: false
+	},
+	//Paging 
+	enablePaging: false,
+	pagingOptions: {
+		pageSizes: ko.observableArray([250, 500, 1000]), //page Sizes
+		pageSize: ko.observable(250), //Size of Paging data
+		totalServerItems: ko.observable(0), //how many items are on the server (for paging)
+		currentPage: ko.observable(1) //what page they are currently on
+	}
+};
+
 window.kg.Grid = function (options) {
-    var defaults = {
-            rowHeight: 30,
-            columnWidth: 100,
-            headerRowHeight: 30,
-            footerRowHeight: 55,
-            footerVisible: true,			
-            displayFooter: undefined,
-            canSelectRows: true,
-            selectAllState: ko.observable(false),
-            data: ko.observableArray([]),
-            columnDefs: undefined,
-            selectedItems: ko.observableArray([]), // array, if multi turned off will have only one item in array
-            displaySelectionCheckbox: true, //toggles whether row selection check boxes appear
-            selectWithCheckboxOnly: false,
-            useExternalSorting: false,
-            sortInfo: ko.observable(undefined), // similar to filterInfo
-            multiSelect: true,
-            tabIndex: -1,
-            enableColumnResize: true,
-            enableColumnDragAndDrop: true,
-            enableSorting: true,
-            maintainColumnRatios: undefined,
-            beforeSelectionChange: function () { return true;},
-            afterSelectionChange: function () { return true; },
-            columnsChanged: function() { },
-            rowTemplate: undefined,
-            headerRowTemplate: undefined,
-            footerRowTemplate: undefined,
-            topSummaryRowTemplate: undefined,
-            aggregateRowTemplate: undefined,
-            jqueryUITheme: false,
-            jqueryUIDraggable: false,
-            plugins: [],
-            keepLastSelected: true,
-            groups: [],
-            showGroupPanel: false,
-            showTopSummary: false,
-            showAggregateSummary: false,
-            enableRowReordering: false,
-            showColumnMenu: true,
-            showFilter: true,
-			searchColumn: undefined,
-            disableTextSelection: true,
-            filterOptions: {
-                filterText: ko.observable(""),
-                useExternalFilter: false
-            },
-            //Paging 
-            enablePaging: false,
-            pagingOptions: {
-                pageSizes: ko.observableArray([250, 500, 1000]), //page Sizes
-                pageSize: ko.observable(250), //Size of Paging data
-                totalServerItems: ko.observable(0), //how many items are on the server (for paging)
-                currentPage: ko.observable(1) //what page they are currently on
-            }
-        },
-        self = this;
+    var self = this;
     
     self.maxCanvasHt = ko.observable(0);
     //self vars
-    self.config = $.extend(defaults, options);
+    self.config = $.extend(window.kg.Defaults, options);
     self.config.columnDefs = ko.utils.unwrapObservable(options.columnDefs);
     if(self.config.columnDefs) self.config.columnDefs = self.config.columnDefs.slice(0,self.config.columnDefs.length);
     self.gridId = "ng" + window.kg.utils.newId();
