@@ -2,7 +2,7 @@
 * koGrid JavaScript Library
 * Authors: https://github.com/ericmbarnard/koGrid/blob/master/README.md
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 2014-01-22 17:11:51
+* Compiled At: 2014-01-22 18:16:50
 ***********************************************/
  
 (function(window){
@@ -231,6 +231,26 @@ window.kg.defaultFooterRowTemplate = function(){ return '<div data-bind="css: {\
 window.kg.defaultHeaderCellTemplate = function(){ return '<div data-bind="style: { cursor : sortable() ? \'pointer\' : \'default\' }, click: sort, css: {\'kgSorted\': !noSortVisible }, attr: {\'class\': \'kgHeaderSortColumn \' + headerClass()}"><div data-bind="attr: { \'class\': \'colt\' + $index() + \' kgHeaderText\' }, html: displayName"></div><div class="kgSortButtonDown" data-bind="visible: showSortButtonDown"></div><div class="kgSortButtonUp" data-bind="visible: showSortButtonUp"></div><div data-bind="visible: resizable, click: gripClick, mouseEvents: { mouseDown: gripOnMouseDown }" class="kgHeaderGrip" ></div></div>';};
 
 /***********************************************
+* FILE: src/templates/aggregateSummaryCellTemplate.html
+***********************************************/
+window.kg.defaultAggregateSummaryCellTemplate = function(){ return '<div data-bind="attr: { \'class\': \'kgAggCellText colt\' + ($index() + $parent.$grid.firstRealColumnIndex() + 1)}, html: window.kg.utils.isNullOrUndefined(summaryFunction) || $data.field == \'\' || $data.field == \'\u2714\' ? \'\' : summaryFunction($.map($parent.getAllChildren(), function(row, i) {return row[$data.field];}))"></div>';};
+
+/***********************************************
+* FILE: src/templates/aggregateSummaryTemplate.html
+***********************************************/
+window.kg.aggregateSummaryTemplate = function(){ return '<div data-bind="click: toggleExpand, style: {\'left\': offsetLeft()}" class="kgAggregate"><div><div data-bind="attr: {\'class\' : \'kgAggCellLeft aggTitleCol\' + depth}"><div class="kgAggCellText" data-bind="html: $data.label">(<span data-bind="html: totalChildren"></span> Items)</div></div><div data-bind="style: {\'left\': \'-\' + offsetLeft()}, attr: {\'class\': \'kgAggSummmaryCols\'} ,visible: $grid.anyAggregateRowColumn,foreach: $grid.aggregateRowColumns"><div data-bind="attr: { \'class\': cellClass() + \' kgAggCell col\' + ($index() + $parent.$grid.firstRealColumnIndex() + 1)}, kgAggSumCell: $data"></div></div>	</div><div data-bind="attr: {\'class\' : aggClass }"></div></div>';};
+
+/***********************************************
+* FILE: src/templates/topSummaryCellTemplate.html
+***********************************************/
+window.kg.defaultTopSummaryCellTemplate = function(){ return '<div data-bind="attr: {\'class\': topSummaryClass()}"><div data-bind="attr: { \'class\': \'colt\' + $index() + \' kgTopSummaryText\' }, html: window.kg.utils.isNullOrUndefined(summaryFunction) || $data.field == \'\' || $data.field == \'\u2714\' ? \'\' : summaryFunction($.map($parent.config.data(), function(row, i) {return row[$data.field];}))"></div></div>';};
+
+/***********************************************
+* FILE: src/templates/topSummaryRowTemplate.html
+***********************************************/
+window.kg.defaultTopSummaryRowTemplate = function(){ return '<div data-bind="foreach: visibleColumns"><div data-bind="kgTopSummaryCell: $data, attr: { \'class\': \'kgTopSummaryCell col\' + $index() }"></div></div>';};
+
+/***********************************************
 * FILE: src/bindingHandlers/ko-grid.js
 ***********************************************/
 ko.bindingHandlers.koGrid = (function () {
@@ -255,41 +275,38 @@ ko.bindingHandlers.koGrid = (function () {
 				grid.searchProvider.evalFilter();
 				grid.refreshDomSizes();
 			});
-			//options.selectedItems.subscribe(function(opt1, opt2) {
-				//use ko.utils.arrayPushAll(array, items) to add elements
-				//use removeAll to delete
-				//use ko.utils.compareArrays(previousValue, latestValue); to identify added/deleted items an mark all in one time
-				//but may be it is overengineering
-			//});
 			
-			//VERESOV on 2013/07/12: fix bug with uninitialized selectedItems field
 			if (options.selectedItems !== undefined) {
-				options.selectedItems.subscribeArrayChanged(
-					function (dataAdded) {
-						if (grid.$$selectionPhase) {
-							return;
-						}
-
-						$.each(grid.rowFactory.rowCache, function (key, row) {
-							if (row.entity == dataAdded) {
-								grid.selectionService.setSelection(row, true);
+				options.selectedItems.subscribe(function(changes) {
+					changes.forEach(function(change) {
+						if (change.status === 'added') {
+							//console.log("Added or removed! The added/removed element is:", change.value);
+							if (grid.$$selectionPhase) {
 								return;
 							}
-						});
-					},
-					function (dataDeleted) {
-						if (grid.$$selectionPhase) {
-							return;
-						}
 
-						$.each(grid.rowFactory.rowCache, function (key, row) {
-							if (row.entity == dataDeleted) {
-								grid.selectionService.setSelection(row, false);
+							$.each(grid.rowFactory.rowCache, function (key, row) {
+								if (row.entity == change.value) {
+									grid.selectionService.setSelection(row, true);
+									return;
+								}
+							});
+						}
+						if (change.status === 'deleted') {
+							//console.log("Added or removed! The added/removed element is:", change.value);
+							if (grid.$$selectionPhase) {
 								return;
 							}
-						});
-					}
-				);
+
+							$.each(grid.rowFactory.rowCache, function (key, row) {
+								if (row.entity == change.value) {
+									grid.selectionService.setSelection(row, false);
+									return;
+								}
+							});
+						}
+					});
+				}, null, "arrayChange");
 			}
 			
 			// if columndefs are observable watch for changes and rebuild columns.
@@ -475,6 +492,78 @@ ko.bindingHandlers.mouseEvents = (function () {
 			if (eFuncs.mouseDown) {
 				$(element).mousedown(eFuncs.mouseDown);
 			}
+		}
+	};
+}());
+
+/***********************************************
+* FILE: src/bindingHandlers/kg-agg-sum-cell.js
+***********************************************/
+ko.bindingHandlers.kgAggSumCell = (function () {
+	return {
+		'init': function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+			bindingContext.$userViewModel = bindingContext.$parent.$userViewModel;
+			var compile = function (html) {
+				var cell = $(html);
+				ko.applyBindings(bindingContext, cell[0]);
+				$(element).html(cell);
+			};
+			if (viewModel.aggregateSummaryCellTemplate.then) {
+				viewModel.aggregateSummaryCellTemplate.then(function (p) {
+					compile(p);
+				});
+			} else {
+				compile(viewModel.aggregateSummaryCellTemplate);
+			}
+			return { controlsDescendantBindings: true };
+		}
+	};
+}());
+
+/***********************************************
+* FILE: src/bindingHandlers/kg-top-summary-cell.js
+***********************************************/
+ko.bindingHandlers.kgTopSummaryCell = (function () {
+	return {
+		'init': function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+			var newContext = bindingContext.extend({ $grid: bindingContext.$parent, $userViewModel: bindingContext.$parent.$userViewModel });
+			var compile = function (html) {
+				var headerCell = $(html);
+				ko.applyBindings(newContext, headerCell[0]);
+				$(element).html(headerCell);
+			};
+			if (viewModel.topSummaryCellTemplate.then) {
+				viewModel.topSummaryCellTemplate.then(function (p) {
+					compile(p);
+				});
+			} else {
+				compile(viewModel.topSummaryCellTemplate);
+			}
+			return { controlsDescendantBindings: true };
+		}
+	};
+}());
+
+/***********************************************
+* FILE: src/bindingHandlers/kg-top-summary-row.js
+***********************************************/
+ko.bindingHandlers.kgTopSummaryRow = (function () {
+	return {
+		'init': function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+			bindingContext.$userViewModel = bindingContext.$data.$userViewModel;
+			var compile = function (html) {
+				var headerRow = $(html);
+				ko.applyBindings(bindingContext, headerRow[0]);
+				$(element).html(headerRow);
+			};
+			if (viewModel.topSummaryRowTemplate.then) {
+				viewModel.topSummaryRowTemplate.then(function (p) {
+					compile(p);
+				});
+			} else {
+				compile(viewModel.topSummaryRowTemplate);
+			}
+			return { controlsDescendantBindings: true };
 		}
 	};
 }());

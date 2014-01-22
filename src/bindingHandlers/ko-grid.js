@@ -20,41 +20,38 @@
 				grid.searchProvider.evalFilter();
 				grid.refreshDomSizes();
 			});
-			//options.selectedItems.subscribe(function(opt1, opt2) {
-				//use ko.utils.arrayPushAll(array, items) to add elements
-				//use removeAll to delete
-				//use ko.utils.compareArrays(previousValue, latestValue); to identify added/deleted items an mark all in one time
-				//but may be it is overengineering
-			//});
 			
-			//VERESOV on 2013/07/12: fix bug with uninitialized selectedItems field
 			if (options.selectedItems !== undefined) {
-				options.selectedItems.subscribeArrayChanged(
-					function (dataAdded) {
-						if (grid.$$selectionPhase) {
-							return;
-						}
-
-						$.each(grid.rowFactory.rowCache, function (key, row) {
-							if (row.entity == dataAdded) {
-								grid.selectionService.setSelection(row, true);
+				options.selectedItems.subscribe(function(changes) {
+					changes.forEach(function(change) {
+						if (change.status === 'added') {
+							//console.log("Added or removed! The added/removed element is:", change.value);
+							if (grid.$$selectionPhase) {
 								return;
 							}
-						});
-					},
-					function (dataDeleted) {
-						if (grid.$$selectionPhase) {
-							return;
-						}
 
-						$.each(grid.rowFactory.rowCache, function (key, row) {
-							if (row.entity == dataDeleted) {
-								grid.selectionService.setSelection(row, false);
+							$.each(grid.rowFactory.rowCache, function (key, row) {
+								if (row.entity == change.value) {
+									grid.selectionService.setSelection(row, true);
+									return;
+								}
+							});
+						}
+						if (change.status === 'deleted') {
+							//console.log("Added or removed! The added/removed element is:", change.value);
+							if (grid.$$selectionPhase) {
 								return;
 							}
-						});
-					}
-				);
+
+							$.each(grid.rowFactory.rowCache, function (key, row) {
+								if (row.entity == change.value) {
+									grid.selectionService.setSelection(row, false);
+									return;
+								}
+							});
+						}
+					});
+				}, null, "arrayChange");
 			}
 			
 			// if columndefs are observable watch for changes and rebuild columns.
