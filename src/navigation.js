@@ -21,7 +21,7 @@ window.kg.moveSelectionHandler = function(grid, evt) {
 	if (index < 0 || index >= items.length) {
 		return true;
 	}
-grid.selectionService.ChangeSelection(items[index], evt);
+	grid.selectionService.ChangeSelection(items[index], evt);
 	if (index > items.length - EXCESS_ROWS) {
 		grid.$viewport.scrollTop(grid.$viewport.scrollTop() + (grid.config.rowHeight * EXCESS_ROWS));
 	} else if (index < EXCESS_ROWS) {

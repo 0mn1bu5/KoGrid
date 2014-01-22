@@ -214,7 +214,7 @@ window.kg.sortService = {
 		//see if we already figured out what to use to sort the column
 		if (window.kg.sortService.colSortFnCache[col.field]) {
 			sortFn = window.kg.sortService.colSortFnCache[col.field];
-		} else if (col.sortingAlgorithm != undefined) {
+		} else if (col.sortingAlgorithm !== undefined) {
 			sortFn = col.sortingAlgorithm;
 			window.kg.sortService.colSortFnCache[col.field] = col.sortingAlgorithm;
 		} else { // try and guess what sort function to use
@@ -242,7 +242,7 @@ window.kg.sortService = {
 				return 0;
 			} else if (!propA && (propA === undefined || propA === null)) {
 				return 1;
-			} else if (!propB && (propB === undefined || propA === null)) {
+			} else if (!propB && (propB === undefined || propB === null)) {
 				return -1;
 			}
 			//made it this far, we don't have to worry about null & undefined

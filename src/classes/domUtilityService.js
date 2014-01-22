@@ -72,9 +72,9 @@ window.kg.domUtilityService = {
 			  "." + gridId + " .kgCanvas { width: " + trw + "px; }" +
 			  "." + gridId + " .kgHeaderCell { top: 0; bottom: 0; }" + 
 			  "." + gridId + " .kgHeaderScroller { width: " + (trw + window.kg.domUtilityService.scrollH + 2) + "px}";
-		$.each(cols, function (i, col) {
-			css += "." + gridId + " .col" + i + " { width: " + col.width + "px; left: " + sumWidth + "px; right: " + (trw - sumWidth - col.width) + "px; height: " + rowHeight + "px }" +
-				   "." + gridId + " .colt" + i + " { width: " + col.width + "px; }";
+		$.each(cols, function (j, col) {
+			css += "." + gridId + " .col" + j + " { width: " + col.width + "px; left: " + sumWidth + "px; right: " + (trw - sumWidth - col.width) + "px; height: " + rowHeight + "px }" +
+				   "." + gridId + " .colt" + j + " { width: " + col.width + "px; }";
 			sumWidth += col.width;
 		});
 
@@ -82,7 +82,7 @@ window.kg.domUtilityService = {
 			var groupingColumns = grid.visibleColumns().length - grid.nonAggAndCheckboxVisibleColumns().length;
 			var firstNonAggColumn = grid.nonAggAndCheckboxVisibleColumns()[0];
 			
-			for(  var i = 0; i < groupingColumns; i++)
+			for(var i = 0; i < groupingColumns; i++)
 			{
 				css += "." + gridId + " .aggTitleCol" + i + " {width: " + (firstNonAggColumn.width + (groupingColumns - i - 1) * 25) + "px;}";
 			}

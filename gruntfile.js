@@ -83,7 +83,7 @@ module.exports = function(grunt) {
 					"src/classes/sortService.js",
 					"src/classes/domUtilityService.js"
 				],
-				dest: "dist/<%= pkg.name %>-<%= pkg.version %>.debug.js"
+				dest: "<%= pkg.name %>-<%= pkg.version %>.debug.js"
 			}
 		},
 		// tests are busted - must be written for v1
@@ -96,11 +96,11 @@ module.exports = function(grunt) {
 			},
 			build: {
 				src: "<%= concat.dist.dest %>",
-				dest: "dist/<%= pkg.name %>-<%= pkg.version %>.js"
+				dest: "<%= pkg.name %>-<%= pkg.version %>.js"
 			}
 		},
 		jshint: {
-			all: ["gruntfile.js","src/**/*.js"],
+			all: ["src/**/*.js"],
 			options: {
 				eqnull: true,
 				curly: true,
@@ -110,13 +110,9 @@ module.exports = function(grunt) {
 				plusplus: false,
 				quotmark: false,
 				nonew: false,
-				unused: true
-			},
-			ignore_warning: {
-				options: {
-					'-W014': true,
-				},
-				src: ["gruntfile.js", '**/*.js'],
+				unused: true,
+				'-W098': true,
+				'-W099': true,
 			},
 		}
 	});

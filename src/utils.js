@@ -113,8 +113,7 @@ window.kg.utils = {
 	ieVersion: (function() {
 		var version = 3, div = document.createElement('div'), iElems = div.getElementsByTagName('i');
 		// Keep constructing conditional HTML blocks until we hit one that resolves to an empty fragment
-		while (div.innerHTML = '<!--[if gt IE ' + (++version) + ']><i></i><![endif]-->',
-		iElems[0]) ;
+		while (div.innerHTML = '<!--[if gt IE ' + (++version) + ']><i></i><![endif]-->', iElems[0]) ;
 		return version > 4 ? version : undefined;
 	})()
 };

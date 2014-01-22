@@ -71,7 +71,7 @@ window.kg.Grid = function (options) {
 	//self vars
 	self.config = $.extend(window.kg.Defaults, options);
 	self.config.columnDefs = ko.utils.unwrapObservable(options.columnDefs);
-	if(self.config.columnDefs) self.config.columnDefs = self.config.columnDefs.slice(0,self.config.columnDefs.length);
+	if(self.config.columnDefs) { self.config.columnDefs = self.config.columnDefs.slice(0,self.config.columnDefs.length); }
 	self.gridId = "ng" + window.kg.utils.newId();
 	self.$root = null; //this is the root element that is passed in with the binding handler
 	self.$groupPanel = null;
@@ -223,7 +223,7 @@ window.kg.Grid = function (options) {
 		
 		//Field is empty only for "aggregating" columns. All aggregating columns are at the front of the array
 		for (var ind = 0; ind < columns.length; ind++) {
-			if (columns[ind].field == '') { // Checking if its an aggregating column
+			if (columns[ind].field === '') { // Checking if its an aggregating column
 				totalWidth += columns[ind].width;
 			}
 			else {
@@ -278,10 +278,15 @@ window.kg.Grid = function (options) {
 		});
 		// check if we saved any asterisk columns for calculating later
 		if (asterisksArray.length > 0) {
-			self.config.maintainColumnRatios === false ? $.noop() : self.config.maintainColumnRatios = true;
+			if (self.config.maintainColumnRatios === false) {
+				$.noop();
+			}
+			else {
+				self.config.maintainColumnRatios = true;
+			}
 			// get the remaining width
 			var remainingWidth = self.rootDim.outerWidth() - totalWidth;
-		  
+
 			var offset = 2; //We're going to remove 2 px so we won't overflow the viewport by default
 			// calculate the weight of each asterisk rounded down
 			if (self.maxCanvasHt() > self.viewportDimHeight()) {
@@ -290,7 +295,9 @@ window.kg.Grid = function (options) {
 			}
 			
 			remainingWidth -= offset;
-			if (remainingWidth < 0) remainingWidth = 0;
+			if (remainingWidth < 0) { 
+				remainingWidth = 0;
+			}
 			// calculate the weight of each asterisk rounded down
 			var asteriskVal = Math.floor(remainingWidth / asteriskNum);
 			// set the width of each column based on the number of stars
@@ -316,7 +323,7 @@ window.kg.Grid = function (options) {
 		// Now we check if we saved any percentage columns for calculating last
 		if (percentArray.length > 0) {
 			// do the math
-			var remainingWidth = self.rootDim.outerWidth() - totalWidth;
+			remainingWidth = self.rootDim.outerWidth() - totalWidth;
 
 			$.each(percentArray, function (i, col) {
 				var t = col.width;
@@ -331,13 +338,13 @@ window.kg.Grid = function (options) {
 			var column;
 			$.each(self.columns(), function (i, c) {
 				if(field == c.field) {
-					 column = c;
-					 return false;
+					column = c;
+					return false;
 				}
 			});
 			return column;
 		}
-	}
+	};
 	self.init = function () {
 		//factories and services
 		
@@ -678,11 +685,11 @@ window.kg.Grid = function (options) {
 	self.cantPageForward = ko.computed(function () {
 		var curPage = self.config.pagingOptions.currentPage();
 		var maxPages = self.maxPages();
-		return !(curPage < maxPages);
+		return (curPage >= maxPages);
 	});
 	self.cantPageBackward = ko.computed(function () {
 		var curPage = self.config.pagingOptions.currentPage();
-		return !(curPage > 1);
+		return (curPage <= 1);
 	});
 	//call init
 	self.init();
