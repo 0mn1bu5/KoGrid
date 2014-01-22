@@ -1,4 +1,4 @@
-﻿ko.bindingHandlers['kgTopSummaryCell'] = (function () {
+﻿ko.bindingHandlers.kgTopSummaryCell = (function () {
 	return {
 		'init': function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
 			var newContext = bindingContext.extend({ $grid: bindingContext.$parent, $userViewModel: bindingContext.$parent.$userViewModel });

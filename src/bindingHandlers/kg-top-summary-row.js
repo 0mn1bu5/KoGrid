@@ -1,4 +1,4 @@
-﻿ko.bindingHandlers['kgTopSummaryRow'] = (function () {
+﻿ko.bindingHandlers.kgTopSummaryRow = (function () {
 	return {
 		'init': function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
 			bindingContext.$userViewModel = bindingContext.$data.$userViewModel;

@@ -1,5 +1,5 @@
 ﻿/// <reference path="../../lib/knockout-2.2.0.js" />
-ko.bindingHandlers['kgAggSumCell'] = (function () {
+ko.bindingHandlers.kgAggSumCell = (function () {
 	return {
 		'init': function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
 			bindingContext.$userViewModel = bindingContext.$parent.$userViewModel;

@@ -15,7 +15,7 @@ module.exports = function(grunt) {
 				leader += matches[1] + " = function(){ return '";
 
 				// remove comment line
-				src = src.replace(/^<!--.*-->$/m, "");
+				src = src.replace(/^<!--.*-->$/gm, "");
 
 				// escape characters, remove extra whitespace
 				src = src.replace(/'/g, "\\'").replace(/^\s*(.*)\s*$/gm, "$1") + "';};";
@@ -23,7 +23,7 @@ module.exports = function(grunt) {
 		}
 
 		// remove references
-		src = src.replace(/^\/\/\/.*$/m, "");
+		src = src.replace(/\/\/\/.*\s*/g, "");
 		
 		return leader + src;
 	}
@@ -111,14 +111,20 @@ module.exports = function(grunt) {
 				quotmark: false,
 				nonew: false,
 				unused: true
-			}
+			},
+			ignore_warning: {
+				options: {
+					'-W014': true,
+				},
+				src: ["gruntfile.js", '**/*.js'],
+			},
 		}
 	});
 
-	// grunt.loadNpmTasks("grunt-contrib-jshint");
+	grunt.loadNpmTasks("grunt-contrib-jshint");
 	grunt.loadNpmTasks('grunt-contrib-clean');
 	grunt.loadNpmTasks("grunt-contrib-uglify");
 	grunt.loadNpmTasks("grunt-contrib-concat");
 
-	grunt.registerTask("default", ["clean","concat","uglify"]);
+	grunt.registerTask("default", ["clean","concat","uglify","jshint"]);
 };
