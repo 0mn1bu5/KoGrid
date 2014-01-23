@@ -2,7 +2,7 @@
 * koGrid JavaScript Library
 * Authors: https://github.com/ericmbarnard/koGrid/blob/master/README.md
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 2014-01-22 18:16:50
+* Compiled At: 2014-01-23 17:19:34
 ***********************************************/
  
 (function(window){
@@ -853,23 +853,23 @@ window.kg.EventProvider = function (grid) {
 	self.assignEvents = function () {
 		// Here we set the onmousedown event handler to the header container.
 		if (grid.config.enableColumnDragAndDrop) {
-		if(grid.config.jqueryUIDraggable){
-			grid.$groupPanel.droppable({
-				addClasses: false,
-				drop: function(event) {
-					self.onGroupDrop(event);
+			if (grid.config.jqueryUIDraggable) {
+				grid.$groupPanel.droppable({
+					addClasses: false,
+					drop: function(event) {
+						self.onGroupDrop(event);
+					}
+				});
+				$(document).ready(self.setDraggables);
+			} else {
+				grid.$groupPanel.on('mousedown', self.onGroupMouseDown).on('dragover', self.dragOver).on('drop', self.onGroupDrop);
+				grid.$headerScroller.on('mousedown', self.onHeaderMouseDown).on('dragover', self.dragOver).on('drop', self.onHeaderDrop);
+				if (grid.config.enableRowReordering) {
+					grid.$viewport.on('mousedown', self.onRowMouseDown).on('dragover', self.dragOver).on('drop', self.onRowDrop);
 				}
-			});
-			$(document).ready(self.setDraggables);	
-		} else {
-			grid.$groupPanel.on('mousedown', self.onGroupMouseDown).on('dragover', self.dragOver).on('drop', self.onGroupDrop);
-			grid.$headerScroller.on('mousedown', self.onHeaderMouseDown).on('dragover', self.dragOver).on('drop', self.onHeaderDrop);
-			if (grid.config.enableRowReordering) {
-				grid.$viewport.on('mousedown', self.onRowMouseDown).on('dragover', self.dragOver).on('drop', self.onRowDrop);
+				self.setDraggables();
 			}
-			self.setDraggables();
-		}
-		grid.visibleColumns.subscribe(self.setDraggables);
+			grid.visibleColumns.subscribe(self.setDraggables);
 		}
 	};
 	self.dragOver = function(evt) {
@@ -2232,20 +2232,20 @@ window.kg.SelectionService = function (grid) {
 	// function to manage the selection action of a data item (entity)
 	self.ChangeSelection = function (rowItem, evt) {
 		grid.$$selectionPhase = true;
-		if (evt && evt.shiftKey && self.multi) {
-			if (self.lastClickedRow) {
+		if (evt && self.multi) {
+			if (evt.shiftKey) {
 				var thisIndx = grid.filteredData.indexOf(rowItem.entity);
-				var prevIndx = grid.filteredData.indexOf(self.lastClickedRow.entity);
+				var prevIndx = self.lastClickedRow ? grid.filteredData.indexOf(self.lastClickedRow.entity) : 0;
 				
 				if (grid.aggColumns().length > 0) {
 					thisIndx = grid.rowFactory.rowCache.indexOf(rowItem);
-					prevIndx = grid.rowFactory.rowCache.indexOf(self.lastClickedRow);
+					prevIndx = self.lastClickedRow ? grid.rowFactory.rowCache.indexOf(self.lastClickedRow) : 0;
 				}
 				
 				if (thisIndx == prevIndx) {
 					return false;
 				}
-				prevIndx++;
+				//prevIndx++;
 				if (thisIndx < prevIndx) {
 					thisIndx = thisIndx ^ prevIndx;
 					prevIndx = thisIndx ^ prevIndx;
@@ -2255,28 +2255,33 @@ window.kg.SelectionService = function (grid) {
 				for (; prevIndx <= thisIndx; prevIndx++) {
 					rows.push(self.rowFactory.rowCache[prevIndx]);
 				}
+				$.each(self.rowFactory.rowCache, function (i, ri) {
+					self.setSelection(ri, false);
+				});
 				if (rows[rows.length - 1].beforeSelectionChange(rows, evt)) {
-					$.each(rows, function(i, ri) {
-						ri.selected(true);
-						ri.entity[SELECTED_PROP](true);
-						if (self.selectedItems.indexOf(ri.entity) === -1) {
-							self.selectedItems.push(ri.entity);
-						}
+					$.each(rows, function (i, ri) {
+						self.setSelection(ri, true);
 					});
 					rows[rows.length - 1].afterSelectionChange(rows, evt);
 				}
 				self.lastClickedRow = rows[rows.length - 1];
 				grid.$$selectionPhase = false;
 				return true;
+			} else if (evt.ctrlKey) {
+				self.setSelection(rowItem, grid.config.keepLastSelected ? true : !rowItem.selected());
+			} else {
+				$.each(self.rowFactory.rowCache, function (i, ri) {
+					self.setSelection(ri, false);
+				});
+				self.selectedItems.removeAll();
+				self.setSelection(rowItem, grid.config.keepLastSelected ? true : !rowItem.selected());
 			}
-		} else if (!self.multi) {
+		} else {
 			if (self.lastClickedRow && self.lastClickedRow != rowItem) {
 				self.setSelection(self.lastClickedRow, false);
 			}
 			self.setSelection(rowItem, grid.config.keepLastSelected ? true : !rowItem.selected());
-		} else {
-			self.setSelection(rowItem, !rowItem.selected());
-		}
+		} 
 		self.lastClickedRow = rowItem;
 		grid.$$selectionPhase = false;
 		return true;
@@ -2310,7 +2315,6 @@ window.kg.SelectionService = function (grid) {
 		$.each(grid.filteredData(), function (i, item) {
 			item[SELECTED_PROP](checkAll);
 
-
 			if (checkAll) {
 				selected.push(item);
 			}
@@ -2341,10 +2345,12 @@ window.kg.StyleProvider = function (grid) {
 		return { "width": grid.rootDim.outerWidth() + "px", "height": grid.topPanelHeight() + "px" };
 	});
 	grid.headerStyle = ko.computed(function() {
-		return { "width": Math.max(0, grid.rootDim.outerWidth() - window.kg.domUtilityService.ScrollW) + "px", "height": grid.config.headerRowHeight + "px" };
+		//return { "width": Math.max(0, grid.rootDim.outerWidth() - window.kg.domUtilityService.ScrollW) + "px", "height": grid.config.headerRowHeight + "px" };
+		return { "width": Math.max(0, grid.rootDim.outerWidth()) + "px", "height": grid.config.headerRowHeight + "px" };
 	});
 	grid.topSummaryStyle = ko.computed(function () {
-		return { "width": Math.max(0, grid.rootDim.outerWidth() - window.kg.domUtilityService.ScrollW) + "px", "height": grid.config.headerRowHeight + "px" };
+		//return { "width": Math.max(0, grid.rootDim.outerWidth() - window.kg.domUtilityService.ScrollW) + "px", "height": grid.config.headerRowHeight + "px" };
+		return { "width": Math.max(0, grid.rootDim.outerWidth()) + "px", "height": grid.config.headerRowHeight + "px" };
 	});
 	grid.viewportStyle = ko.computed(function() {
 		return { "width": grid.rootDim.outerWidth() + "px", "height": grid.viewportDimHeight() + "px" };

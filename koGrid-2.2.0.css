@@ -155,7 +155,7 @@
 .kgHeaderGrip { 
     cursor: col-resize; 
     width: 10px; 
-	right: -5px;
+	right: 5px;
     top: 0; 
     height: 100%; 
     position: absolute; 

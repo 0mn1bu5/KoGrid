@@ -14,20 +14,20 @@ window.kg.SelectionService = function (grid) {
 	// function to manage the selection action of a data item (entity)
 	self.ChangeSelection = function (rowItem, evt) {
 		grid.$$selectionPhase = true;
-		if (evt && evt.shiftKey && self.multi) {
-			if (self.lastClickedRow) {
+		if (evt && self.multi) {
+			if (evt.shiftKey) {
 				var thisIndx = grid.filteredData.indexOf(rowItem.entity);
-				var prevIndx = grid.filteredData.indexOf(self.lastClickedRow.entity);
+				var prevIndx = self.lastClickedRow ? grid.filteredData.indexOf(self.lastClickedRow.entity) : 0;
 				
 				if (grid.aggColumns().length > 0) {
 					thisIndx = grid.rowFactory.rowCache.indexOf(rowItem);
-					prevIndx = grid.rowFactory.rowCache.indexOf(self.lastClickedRow);
+					prevIndx = self.lastClickedRow ? grid.rowFactory.rowCache.indexOf(self.lastClickedRow) : 0;
 				}
 				
 				if (thisIndx == prevIndx) {
 					return false;
 				}
-				prevIndx++;
+				//prevIndx++;
 				if (thisIndx < prevIndx) {
 					thisIndx = thisIndx ^ prevIndx;
 					prevIndx = thisIndx ^ prevIndx;
@@ -37,28 +37,33 @@ window.kg.SelectionService = function (grid) {
 				for (; prevIndx <= thisIndx; prevIndx++) {
 					rows.push(self.rowFactory.rowCache[prevIndx]);
 				}
+				$.each(self.rowFactory.rowCache, function (i, ri) {
+					self.setSelection(ri, false);
+				});
 				if (rows[rows.length - 1].beforeSelectionChange(rows, evt)) {
-					$.each(rows, function(i, ri) {
-						ri.selected(true);
-						ri.entity[SELECTED_PROP](true);
-						if (self.selectedItems.indexOf(ri.entity) === -1) {
-							self.selectedItems.push(ri.entity);
-						}
+					$.each(rows, function (i, ri) {
+						self.setSelection(ri, true);
 					});
 					rows[rows.length - 1].afterSelectionChange(rows, evt);
 				}
 				self.lastClickedRow = rows[rows.length - 1];
 				grid.$$selectionPhase = false;
 				return true;
+			} else if (evt.ctrlKey) {
+				self.setSelection(rowItem, grid.config.keepLastSelected ? true : !rowItem.selected());
+			} else {
+				$.each(self.rowFactory.rowCache, function (i, ri) {
+					self.setSelection(ri, false);
+				});
+				self.selectedItems.removeAll();
+				self.setSelection(rowItem, grid.config.keepLastSelected ? true : !rowItem.selected());
 			}
-		} else if (!self.multi) {
+		} else {
 			if (self.lastClickedRow && self.lastClickedRow != rowItem) {
 				self.setSelection(self.lastClickedRow, false);
 			}
 			self.setSelection(rowItem, grid.config.keepLastSelected ? true : !rowItem.selected());
-		} else {
-			self.setSelection(rowItem, !rowItem.selected());
-		}
+		} 
 		self.lastClickedRow = rowItem;
 		grid.$$selectionPhase = false;
 		return true;
@@ -91,7 +96,6 @@ window.kg.SelectionService = function (grid) {
 
 		$.each(grid.filteredData(), function (i, item) {
 			item[SELECTED_PROP](checkAll);
-
 
 			if (checkAll) {
 				selected.push(item);
